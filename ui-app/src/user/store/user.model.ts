@@ -4,8 +4,8 @@ export const userState: UserState = {
 };
 
 export interface UserState {
-    isAuthorizationLoading: boolean
-    user: UserData | undefined | null
+    isAuthorizationLoading: boolean;
+    user: UserData | undefined | null;
 }
 
 export interface UserData {
@@ -20,12 +20,29 @@ export interface UserData {
     roles: string[];
 }
 
+export interface UserLoginData {
+    login: string;
+    password: string;
+}
+
+export interface UserRegistrationData {
+    userName: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    isEnabled: boolean;
+    newPassword?: string;
+    currentPassword?: string;
+    roles: string[];
+}
+
 export interface LoginResponse {
     access_token: string;
     refresh_token: string;
     expires_in: number;
     token_type: string;
 }
+
 
 export interface AccessToken {
     nbf: number;
@@ -60,4 +77,7 @@ export enum UserActionTypes {
     REFRESH = "REFRESH_START",
     REFRESH_SUCCESS = "REFRESH_SUCCESS",
     REFRESH_FAILED = "REFRESH_FAILED",
+    GET_USER_BY_TOKEN = "GET_USER_BY_TOKEN",
+    GET_USER_BY_TOKEN_SUCCESS = "GET_USER_BY_TOKEN_SUCCESS",
+    GET_USER_BY_TOKEN_FAILED = "GET_USER_BY_TOKEN_FAILED"
 };
