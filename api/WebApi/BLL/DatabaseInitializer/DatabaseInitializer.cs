@@ -1,8 +1,6 @@
-﻿using Contracts.Business;
-using Contracts.Data;
+﻿using Contracts.Data;
 using DAL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace BLL;
 
@@ -18,5 +16,6 @@ public class DatabaseInitializer : IDatabaseInitializer
     public async Task SeedAsync()
     {
         await _context.Database.MigrateAsync().ConfigureAwait(false);
+
     }
 }

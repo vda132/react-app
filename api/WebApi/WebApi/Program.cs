@@ -1,8 +1,8 @@
 using BLL;
+using Contracts.Business;
 using Contracts.Data;
 using DAL;
 using DB.Models;
-using Duende.IdentityServer.AspNetIdentity;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -107,7 +107,11 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
+
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
 

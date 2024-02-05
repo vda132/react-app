@@ -4,7 +4,7 @@ namespace Contracts.Business;
 
 public interface IAccountService
 {
-   Task<bool> CheckPasswordAsync(DtoRole user, string password);
+        Task<bool> CheckPasswordAsync(DtoRole user, string password);
         Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(DtoRole role, IEnumerable<string> claims);
         Task<(bool Succeeded, string[] Errors)> CreateUserAsync(DtoUser user, IEnumerable<string> roles, string password);
         Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(DtoRole role);

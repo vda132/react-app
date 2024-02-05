@@ -1,119 +1,258 @@
-﻿using Contracts.Business;
+﻿using AutoMapper;
+using Contracts.Business;
 using DAL;
 using DB.Models;
 using DTO;
+using DTO.Constants;
+using DTO.Permissions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Models;
+using System.Security.Claims;
 
 namespace BLL;
 
 /// <summary>
-/// TODO: Add base logic for this service
+/// TODO: Add logic for Test before delete for users and roles
 /// </summary>
 public class AccountService : IAccountService
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<EntityUser> _userManager;
     private readonly RoleManager<EntityRole> _roleManager;
+    private readonly IMapper _mapper;
 
     public AccountService(
     ApplicationDbContext context,
     UserManager<EntityUser> userManager,
-    RoleManager<EntityRole> roleManager)
+    RoleManager<EntityRole> roleManager,
+    IMapper mapper)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
+        _mapper = mapper;
     }
 
-    public Task<bool> CheckPasswordAsync(DtoRole user, string password)
+    public async Task<bool> CheckPasswordAsync(DtoRole user, string password)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var result = await _userManager.CheckPasswordAsync(userEntity, password);
+        return result;
     }
 
-    public Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(DtoRole role, IEnumerable<string> claims)
+    public async Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(DtoRole role, IEnumerable<string> claims)
     {
-        throw new NotImplementedException();
+        claims ??= new string[] { };
+
+        var roleEntity = _mapper.Map<EntityRole>(role); 
+        var invalidClaims = claims.Where(el => ApplicationPermissions.GetPermissionByValue(el) == null).ToArray();
+        
+        if (invalidClaims.Any())
+            return (false, new[] { $"The following claim types are invalid: {string.Join(", ", invalidClaims)}" });
+
+        var result = await _roleManager.CreateAsync(roleEntity);
+
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(el => el.Description).ToArray());
+
+        foreach (var claim in claims)
+        {
+            result = await _roleManager.AddClaimAsync(roleEntity, new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
+            if (!result.Succeeded)
+            {
+                await DeleteRoleAsync(roleEntity);
+                return (false, result.Errors.Select(el => el.Description).ToArray());
+            }
+        }
+
+        return (true, new string[] { });
     }
 
-    public Task<(bool Succeeded, string[] Errors)> CreateUserAsync(DtoUser user, IEnumerable<string> roles, string password)
+    public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(DtoUser user, IEnumerable<string> roles, string password)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var result = await _userManager.CreateAsync(userEntity, password);
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        userEntity = await _userManager.FindByNameAsync(userEntity.UserName);
+
+        user.Id = userEntity.Id;
+        try
+        {
+            result = await _userManager.AddToRolesAsync(userEntity, roles.Distinct());
+        }
+        catch
+        {
+            await DeleteUserAsync(userEntity);
+            throw;
+        }
+
+        if (!result.Succeeded)
+        {
+            await DeleteUserAsync(userEntity);
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+        }
+
+        return (true, new string[] { });
     }
 
-    public Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(DtoRole role)
+    public async Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(DtoRole role)
     {
-        throw new NotImplementedException();
+        var roleEntity = _mapper.Map<EntityRole>(role);
+        var result = await DeleteRoleAsync(roleEntity);
+
+        return result;
     }
 
-    public Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(string roleName)
+    public async Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(string roleName)
     {
-        throw new NotImplementedException();
+        var roleEntity = await _roleManager.FindByNameAsync(roleName);
+        var result = await DeleteRoleAsync(roleEntity);
+
+        return result;
     }
 
-    public Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(DtoUser user)
+    public async Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(DtoUser user)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var result = await DeleteUserAsync(userEntity);
+
+        return result;
     }
 
-    public Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(string userId)
+    public async Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(string userId)
     {
-        throw new NotImplementedException();
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user != null)
+            return await DeleteUserAsync(user);
+
+        return (true, new string[] { });
     }
 
-    public Task<DtoRole> GetRoleByIdAsync(string roleId)
+    public async Task<DtoRole> GetRoleByIdAsync(string roleId)
     {
-        throw new NotImplementedException();
+        var role = await _roleManager.FindByIdAsync(roleId);
+        var result = _mapper.Map<DtoRole>(role);
+        return result;
     }
 
-    public Task<DtoRole> GetRoleByNameAsync(string roleName)
+    public async Task<DtoRole> GetRoleByNameAsync(string roleName)
     {
-        throw new NotImplementedException();
+        var role = await _roleManager.FindByNameAsync(roleName);
+        var result = _mapper.Map<DtoRole>(role);
+        return result;
     }
 
-    public Task<DtoRole> GetRoleLoadRelatedAsync(string roleName)
+    public async Task<DtoRole> GetRoleLoadRelatedAsync(string roleName)
     {
-        throw new NotImplementedException();
+        var roles = await _context
+            .Roles
+            .Where(el => el.Name == roleName)
+            .Include(el => el.Users)
+            .Include(el => el.Claims)
+            .AsSingleQuery()
+            .SingleOrDefaultAsync();
+        var result = _mapper.Map<DtoRole>(roles);
+        
+        return result;
     }
 
-    public Task<List<DtoRole>> GetRolesLoadRelatedAsync(int page, int pageSize)
+    public async Task<List<DtoRole>> GetRolesLoadRelatedAsync(int page, int pageSize)
     {
-        throw new NotImplementedException();
+        var roles = await _context
+            .Roles
+            .Include(el => el.Users)
+            .Include(el => el.Claims)
+            .AsSingleQuery()
+            .ToListAsync();
+        var result = _mapper.Map<List<DtoRole>>(roles);
+
+        return result;
     }
 
-    public Task<(DtoUser User, string[] Roles)?> GetUserAndRolesAsync(string userId)
+    public async Task<(DtoUser User, string[] Roles)?> GetUserAndRolesAsync(string userId)
     {
-        throw new NotImplementedException();
+        var user = await _context
+            .Users.Include(u => u.Roles)
+            .Where(u => u.Id == userId)
+            .SingleOrDefaultAsync();
+
+        if (user is null) 
+            return null;
+
+        var userRoleIds = user.Roles.Select(el => el.RoleId).ToList();
+        var roles = await _context.Roles.Where(el => userRoleIds.Contains(el.Id)).Select(el => el.Name).ToArrayAsync();
+
+        var userResult = _mapper.Map<DtoUser>(user);
+        return (userResult, roles);
     }
 
-    public Task<DtoUser> GetUserByEmailAsync(string email)
+    public async Task<DtoUser> GetUserByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        var user = await _userManager.FindByEmailAsync(email);
+        var result = _mapper.Map<DtoUser>(user);
+
+        return result;
     }
 
-    public Task<DtoUser> GetUserByIdAsync(string userId)
+    public async Task<DtoUser> GetUserByIdAsync(string userId)
     {
-        throw new NotImplementedException();
+        var user = await _userManager.FindByIdAsync(userId);
+        var result = _mapper.Map<DtoUser>(user);
+
+        return result;
     }
 
-    public Task<DtoUser> GetUserByUserNameAsync(string userName)
+    public async Task<DtoUser> GetUserByUserNameAsync(string userName)
     {
-        throw new NotImplementedException();
+        var user = await _userManager.FindByNameAsync(userName);
+        var result = _mapper.Map<DtoUser>(user);
+
+        return result;
     }
 
-    public Task<IList<string>> GetUserRolesAsync(DtoUser user)
+    public async Task<IList<string>> GetUserRolesAsync(DtoUser user)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var roles = await _userManager.GetRolesAsync(userEntity);
+
+        return roles;
     }
 
-    public Task<List<(DtoUser User, string[] Roles)>> GetUsersAndRolesAsync(int page, int pageSize)
+    public async Task<List<(DtoUser User, string[] Roles)>> GetUsersAndRolesAsync(int page, int pageSize)
     {
-        throw new NotImplementedException();
+        IQueryable<EntityUser> usersQuery = _context.Users.Include(el => el.Roles);
+
+        if (page > 0)
+            usersQuery = usersQuery.Skip((page - 1) * pageSize);
+
+        if (pageSize > -1)
+            usersQuery = usersQuery.Take(pageSize);
+
+        var users = await usersQuery.ToListAsync();
+        var userRoleIds = users.SelectMany(u => u.Roles, (u, r) => r.RoleId).ToList();
+        var roles = await _context.Roles
+                .Where(r => userRoleIds.Contains(r.Id))
+                .ToArrayAsync();
+
+        return users
+               .Select(u => (_mapper.Map<DtoUser>(u), roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray()))
+               .ToList();
     }
 
-    public Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(DtoUser user, string newPassword)
+    public async Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(DtoUser user, string newPassword)
     {
-        throw new NotImplementedException();
+        var userEntity = await _userManager.FindByIdAsync(user.Id);
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(userEntity!);
+        var result = await _userManager.ResetPasswordAsync(userEntity!, resetToken, newPassword);
+
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        return (true, new string[] { });
     }
 
     public Task<bool> TestCanDeleteRoleAsync(string roleId)
@@ -126,23 +265,110 @@ public class AccountService : IAccountService
         throw new NotImplementedException();
     }
 
-    public Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(DtoUser user, string currentPassword, string newPassword)
+    public async Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(DtoUser user, string currentPassword, string newPassword)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var result = await _userManager.ChangePasswordAsync(userEntity, currentPassword, newPassword);
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        return (true, new string[] { });
     }
 
-    public Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(DtoRole role, IEnumerable<string> claims)
+    public async Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(DtoRole role, IEnumerable<string> claims)
     {
-        throw new NotImplementedException();
+        var roleEntity = _mapper.Map<EntityRole>(role);
+        if (claims != null)
+        {
+            var invalidClaims = claims.Where(c => ApplicationPermissions.GetPermissionByValue(c) == null).ToArray();
+            if (invalidClaims.Any())
+                return (false, new[] { $"The following claim types are invalid: {string.Join(", ", invalidClaims)}" });
+        }
+
+        var result = await _roleManager.UpdateAsync(roleEntity);
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        if (claims != null)
+        {
+            var roleClaims = (await _roleManager.GetClaimsAsync(roleEntity)).Where(c => c.Type == ClaimConstants.Permission);
+            var roleClaimValues = roleClaims.Select(c => c.Value).ToArray();
+
+            var claimsToRemove = roleClaimValues.Except(claims).ToArray();
+            var claimsToAdd = claims.Except(roleClaimValues).Distinct().ToArray();
+
+            if (claimsToRemove.Any())
+            {
+                foreach (var claim in claimsToRemove)
+                {
+                    result = await _roleManager.RemoveClaimAsync(roleEntity, roleClaims.Where(c => c.Value == claim).FirstOrDefault());
+                    if (!result.Succeeded)
+                        return (false, result.Errors.Select(e => e.Description).ToArray());
+                }
+            }
+
+            if (claimsToAdd.Any())
+            {
+                foreach (var claim in claimsToAdd)
+                {
+                    result = await _roleManager.AddClaimAsync(roleEntity, new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
+                    if (!result.Succeeded)
+                        return (false, result.Errors.Select(e => e.Description).ToArray());
+                }
+            }
+        }
+
+        return (true, new string[] { });
     }
 
-    public Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user)
+    public async Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user)
     {
-        throw new NotImplementedException();
+        return await UpdateUserAsync(user, null);
     }
 
-    public Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user, IEnumerable<string> roles)
+    public async Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user, IEnumerable<string> roles)
     {
-        throw new NotImplementedException();
+        var userEntity = _mapper.Map<EntityUser>(user);
+        var result = await _userManager.UpdateAsync(userEntity);
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        if (roles != null)
+        {
+            var userRoles = await _userManager.GetRolesAsync(userEntity);
+
+            var rolesToRemove = userRoles.Except(roles).ToArray();
+            var rolesToAdd = roles.Except(userRoles).Distinct().ToArray();
+
+            if (rolesToRemove.Any())
+            {
+                result = await _userManager.RemoveFromRolesAsync(userEntity, rolesToRemove);
+                if (!result.Succeeded)
+                    return (false, result.Errors.Select(e => e.Description).ToArray());
+            }
+
+            if (rolesToAdd.Any())
+            {
+                result = await _userManager.AddToRolesAsync(userEntity, rolesToAdd);
+                if (!result.Succeeded)
+                    return (false, result.Errors.Select(e => e.Description).ToArray());
+            }
+        }
+
+        return (true, new string[] { });
+    }
+
+    private async Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(EntityRole role)
+    {
+        var result = await _roleManager.DeleteAsync(role);
+
+        return (result.Succeeded, result.Errors.Select(el => el.Description).ToArray());
+    }
+
+    private async Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(EntityUser user)
+    {
+        var result = await _userManager.DeleteAsync(user);
+
+        return (result.Succeeded, result.Errors.Select(el => el.Description).ToArray());
     }
 }
