@@ -62,6 +62,7 @@ export interface AccessToken {
     configuration: string;
     scope: string | string[];
     amr: string[];
+    permission: string[];
 }
 
 export enum UserActionTypes {

@@ -40,5 +40,5 @@ public class UserBaseViewModel
 
     public string Configuration { get; set; }
 
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; set; } = true;
 }

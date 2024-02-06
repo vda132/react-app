@@ -7,6 +7,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config: any) => {
+    debugger
     config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`
     return config;
 });

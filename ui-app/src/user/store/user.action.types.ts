@@ -13,7 +13,7 @@ export interface LoginStartActionType {
 
 export interface LoginSuccessActionType {
     type: typeof UserActionTypes.LOGIN_SUCCESS;
-    payload: LoginResponse;
+    payload: UserData;
 }
 
 export interface LoginFailedActionType {
@@ -43,7 +43,7 @@ export interface RefreshStartActionType {
 
 export interface RefreshSuccessActionType {
     type: typeof UserActionTypes.REFRESH_SUCCESS;
-    payload: LoginResponse;
+    payload: UserData;
 }
 
 export interface RefreshFailedActionType {
@@ -66,6 +66,21 @@ export interface GetUserByTokenFailedActionType {
     payload: Error
 }
 
+export interface LogoutStartActionType {
+    type: typeof UserActionTypes.LOGOUT;
+    payload: undefined;
+}
+
+export interface LogoutSuccessActionType {
+    type: typeof UserActionTypes.LOGOUT_SUCCESS;
+    payload: undefined;
+}
+
+export interface LogoutFailedActionType {
+    type: typeof UserActionTypes.LOGOUT_FAILED;
+    payload: Error;
+}
+
 export type UserActions =
     | LoginStartActionType
     | LoginSuccessActionType
@@ -79,3 +94,6 @@ export type UserActions =
     | GetUserByTokenStartActionType 
     | GetUserByTokenSuccessActionType
     | GetUserByTokenFailedActionType
+    | LogoutStartActionType
+    | LogoutSuccessActionType
+    | LogoutFailedActionType

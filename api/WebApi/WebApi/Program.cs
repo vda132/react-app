@@ -15,6 +15,9 @@ using WebApi;
 using WebApi.Authorization;
 using WebApi.Helpers;
 
+var allowResources = "AllowResources";
+
+
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -28,6 +31,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<EntityUser, EntityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+builder.Services.AddCors(options =>
+{
+    // ToDo: change headers
+    options.AddPolicy(name: allowResources,
+        builder => builder
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
 
 // Configure Identity options and password complexity here
 builder.Services.Configure<IdentityOptions>(options =>
@@ -77,6 +91,7 @@ builder.Services.AddAuthentication(o =>
   {
         options.Authority = authServerUrl; // base-address of your identityserver
         options.TokenValidationParameters.ValidateAudience = false;
+        options.TokenValidationParameters.ValidateLifetime = true;
         options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
         options.MapInboundClaims = false;
         options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Name;
@@ -84,9 +99,8 @@ builder.Services.AddAuthentication(o =>
         options.RequireHttpsMetadata = false;//!!!
   });
 
-builder.Services.AddCors();
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = IdentityServerConfig.ApiFriendlyName, Version = "v1" });
@@ -107,6 +121,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
@@ -114,6 +129,8 @@ builder.Services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
+
+app.UseCors(allowResources);
 
 if (app.Environment.IsDevelopment())
 {
@@ -129,10 +146,6 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseCors(builder => builder
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod());
 
 app.UseAuthentication();
 app.UseIdentityServer();
@@ -146,6 +159,17 @@ app.UseSwaggerUI(c =>
     c.OAuthClientId(IdentityServerConfig.SwaggerClientID);
     c.OAuthClientSecret("no_password"); //Leaving it blank doesn't work
 });
+app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller}/{action=Index}/{id?}");
+
+app.Map("api/{**slug}", context =>
+{
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+    return Task.CompletedTask;
+});
+
+app.MapFallbackToFile("index.html");
 
 SeedDatabase(app);
 

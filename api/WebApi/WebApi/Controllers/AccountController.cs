@@ -38,7 +38,7 @@ public class AccountController : BaseController
     public async Task<IActionResult> GetUserById([FromRoute] string id)
     {
         var user = await _accountService.GetUserAndRolesAsync(id);
-        var userVM = _mapper.Map<UserViewModel>(user.Value);
+        var userVM = _mapper.Map<UserViewModel>(user.Value.User);
         userVM.Roles = user.Value.Roles;
 
         return Ok(userVM);

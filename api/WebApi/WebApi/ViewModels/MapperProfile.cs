@@ -22,7 +22,8 @@ public class MapperProfile : Profile
         CreateMap<EntityUser, DtoUser>()
             .ForMember(trg => trg.Roles, map => map.Ignore());
         CreateMap<DtoUser, EntityUser>()
-            .ForMember(trg => trg.Roles, map => map.Ignore());
+            .ForMember(trg => trg.Roles, map => map.Ignore())
+            .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));
 
         // Roles
         CreateMap<EntityRole, DtoRole>()
