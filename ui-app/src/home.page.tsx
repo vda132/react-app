@@ -1,3 +1,5 @@
+import { UserRegistrationData } from "./user/store/user.model"
+
 export const Home = () => {
     return (
         <div>

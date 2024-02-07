@@ -25,15 +25,9 @@ export interface UserLoginData {
     password: string;
 }
 
-export interface UserRegistrationData {
-    userName: string;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    isEnabled: boolean;
+export interface UserRegistrationData extends UserData {
     newPassword?: string;
     currentPassword?: string;
-    roles: string[];
 }
 
 export interface LoginResponse {
@@ -80,5 +74,8 @@ export enum UserActionTypes {
     REFRESH_FAILED = "REFRESH_FAILED",
     GET_USER_BY_TOKEN = "GET_USER_BY_TOKEN",
     GET_USER_BY_TOKEN_SUCCESS = "GET_USER_BY_TOKEN_SUCCESS",
-    GET_USER_BY_TOKEN_FAILED = "GET_USER_BY_TOKEN_FAILED"
+    GET_USER_BY_TOKEN_FAILED = "GET_USER_BY_TOKEN_FAILED",
+    USER_UPDATE = "USER_UPDATE",
+    USER_UPDATE_SUCCESS = "USER_UPDATE_SUCCESS",
+    USER_UPDATE_FAILED = "USER_UPDATE_FAILED"
 };

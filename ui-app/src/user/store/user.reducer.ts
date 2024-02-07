@@ -81,6 +81,25 @@ export const userReducer = (state = userState, action: UserActions) => {
                 user: undefined
             }
         }
+        case UserActionTypes.USER_UPDATE: {
+            return {
+                ...state,
+                isAuthorizationLoading: true
+            }
+        }
+        case UserActionTypes.USER_UPDATE_SUCCESS: {
+            return {
+                ...state,
+                isAuthorizationLoading: false,
+                user: action.payload
+            }
+        }
+        case UserActionTypes.USER_UPDATE_FAILED: {
+            return {
+                ...state,
+                isAuthorizationLoading: false
+            }
+        }
         default: {
            return {...state}
         } 

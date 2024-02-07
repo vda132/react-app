@@ -18,7 +18,6 @@ export const LoginModal = ({ visible, onCancel }: { visible: boolean, onCancel: 
     const processLogin = (loginRequest: UserLoginData) => dispatch(userActions.login(loginRequest))
 
     const onFormSubmit = () => {
-        debugger
         processLogin({ ...values });
     }
 

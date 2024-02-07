@@ -267,7 +267,7 @@ public class AccountService : IAccountService
 
     public async Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(DtoUser user, string currentPassword, string newPassword)
     {
-        var userEntity = _mapper.Map<EntityUser>(user);
+        var userEntity = await _userManager.FindByIdAsync(user.Id);
         var result = await _userManager.ChangePasswordAsync(userEntity, currentPassword, newPassword);
         if (!result.Succeeded)
             return (false, result.Errors.Select(e => e.Description).ToArray());
@@ -328,7 +328,9 @@ public class AccountService : IAccountService
 
     public async Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user, IEnumerable<string> roles)
     {
-        var userEntity = _mapper.Map<EntityUser>(user);
+        var userEntity = await _userManager.FindByIdAsync(user.Id);
+        _mapper.Map<DtoUser, EntityUser>(user, userEntity);
+
         var result = await _userManager.UpdateAsync(userEntity);
         if (!result.Succeeded)
             return (false, result.Errors.Select(e => e.Description).ToArray());

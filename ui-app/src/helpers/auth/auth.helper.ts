@@ -21,7 +21,8 @@ export const proceedLoginResponce = (response: LoginResponse): UserData => {
         fullName: decodedAccessToken.fullname,
         email: decodedAccessToken.email,
         jobTitle: decodedAccessToken.jobtitle,
-        phoneNumber: decodedAccessToken.phone_number
+        phoneNumber: decodedAccessToken.phone_number,
+        roles: Array.isArray(decodedAccessToken.role) ? decodedAccessToken.role : [decodedAccessToken.role]
     } as UserData;
 
     saveUserDetails(user, permissions, accessToken, refreshToken, accessTokenExpiry);

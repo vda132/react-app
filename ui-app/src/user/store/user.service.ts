@@ -33,6 +33,11 @@ export default class UserService {
         return await api.get(url);
     }
 
+    static async updateUser(user: UserRegistrationData): Promise<AxiosResponse<UserData>> {
+        const url = `${userUrl}/me`;
+        return await api.put(url, user);
+    }
+
     static logout(): void {
         localStorage.clear();
     }

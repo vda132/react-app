@@ -88,7 +88,7 @@ public class AccountController : BaseController
     [ProducesResponseType(403)]
     public async Task<IActionResult> UpdateUser([FromRoute] string id, [FromBody] UserEditViewModel user)
     {
-        var userDto = await _accountService.GetUserByIdAsync(id);
+        var userDto = _mapper.Map<DtoUser>(user);
         var isPasswordChanged = !string.IsNullOrWhiteSpace(user.NewPassword);
 
         var result = await _accountService.UpdateUserAsync(userDto, user.Roles);
@@ -102,8 +102,10 @@ public class AccountController : BaseController
                     result = await _accountService.ResetPasswordAsync(userDto, user.NewPassword);
             }
         }
+        var updatedUser = await _accountService.GetUserByIdAsync(id);
+        var userVM = _mapper.Map<UserViewModel>(updatedUser);
 
-        return Ok(result);
+        return Ok(userVM);
     }
 
     [HttpPut("/users/me")]

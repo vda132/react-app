@@ -13,7 +13,10 @@ import {
     LogoutFailedActionType,
     GetUserByTokenStartActionType,
     GetUserByTokenSuccessActionType,
-    GetUserByTokenFailedActionType
+    GetUserByTokenFailedActionType,
+    UserUpdateStartActionType,
+    UserUpdateSuccessActionType,
+    UserUpdateFailedActionType
 } from "./user.action.types";
 import {
     UserLoginData,
@@ -68,6 +71,14 @@ export const getUserByTokenSuccess = (response: UserData):
 export const getUserByTokenFailed = (error: Error):
     GetUserByTokenFailedActionType => ({ type: UserActionTypes.GET_USER_BY_TOKEN_FAILED, payload: error });
 
+export const updateUserStart = (payload: UserRegistrationData):
+    UserUpdateStartActionType => ({ type: UserActionTypes.USER_UPDATE, payload: payload });
+
+export const updateUserSuccess = (responce: UserData): 
+    UserUpdateSuccessActionType => ({ type: UserActionTypes.USER_UPDATE_SUCCESS, payload: responce });
+
+export const updateUserFailed = (error: Error): 
+    UserUpdateFailedActionType => ({ type: UserActionTypes.USER_UPDATE_FAILED, payload: error });
 
 export const userActions = {
     login: (loginData: UserLoginData) => loginStartAction(loginData),
@@ -84,5 +95,8 @@ export const userActions = {
     logoutFailed: (error: Error) => logoutFailed(error),
     getUserByToken: () => getUserByTokenStart(),
     getUserByTokenSuccess: (responce: UserData) => getUserByTokenSuccess(responce),
-    getUserByTokenFailed: (error: Error) => getUserByTokenFailed(error)
+    getUserByTokenFailed: (error: Error) => getUserByTokenFailed(error),
+    updateUser: (userUpdateData: UserRegistrationData) => updateUserStart(userUpdateData),
+    updateUserSuccess: (response: UserData) => updateUserSuccess(response),
+    updateUserFailed: (error: Error) => updateUserFailed(error)
 }

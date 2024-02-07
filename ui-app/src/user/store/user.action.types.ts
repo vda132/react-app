@@ -1,6 +1,5 @@
 import {
     UserLoginData,
-    LoginResponse,
     UserRegistrationData,
     UserActionTypes,
     UserData
@@ -81,6 +80,21 @@ export interface LogoutFailedActionType {
     payload: Error;
 }
 
+export interface UserUpdateStartActionType {
+    type: typeof UserActionTypes.USER_UPDATE;
+    payload: UserRegistrationData;
+}
+
+export interface UserUpdateSuccessActionType {
+    type: typeof UserActionTypes.USER_UPDATE_SUCCESS;
+    payload: UserData;
+}
+
+export interface UserUpdateFailedActionType {
+    type: typeof UserActionTypes.USER_UPDATE_FAILED;
+    payload: Error;
+}
+
 export type UserActions =
     | LoginStartActionType
     | LoginSuccessActionType
@@ -97,3 +111,6 @@ export type UserActions =
     | LogoutStartActionType
     | LogoutSuccessActionType
     | LogoutFailedActionType
+    | UserUpdateStartActionType
+    | UserUpdateSuccessActionType
+    | UserUpdateFailedActionType

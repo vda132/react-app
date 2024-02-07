@@ -22,5 +22,7 @@ namespace DTO
         public bool IsLockedOut { get; set; }
 
         public string[] Roles { get; set; }
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
     }
 }
