@@ -2,7 +2,8 @@ import {
     UserLoginData,
     UserRegistrationData,
     UserActionTypes,
-    UserData
+    UserData,
+    UpdateUserAvatar
 } from "./user.model";
 
 export interface LoginStartActionType {
@@ -95,6 +96,21 @@ export interface UserUpdateFailedActionType {
     payload: Error;
 }
 
+export interface UpdateUserAvatarStartActionType {
+    type: typeof UserActionTypes.USER_UPDATE_AVATAR;
+    payload: UpdateUserAvatar;
+}
+
+export interface UpdateUserAvatarSuccessActionType {
+    type: typeof UserActionTypes.USER_UPDATE_AVATAR_SUCCESS;
+    payload: undefined;
+}
+
+export interface UpdateUserAvatarFailedActionType {
+    type: typeof UserActionTypes.USER_UPDATE_AVATAR_FAILED;
+    payload: Error;
+}
+
 export type UserActions =
     | LoginStartActionType
     | LoginSuccessActionType
@@ -104,8 +120,8 @@ export type UserActions =
     | RegistrationFailedActionType
     | RefreshStartActionType
     | RefreshSuccessActionType
-    | RefreshFailedActionType 
-    | GetUserByTokenStartActionType 
+    | RefreshFailedActionType
+    | GetUserByTokenStartActionType
     | GetUserByTokenSuccessActionType
     | GetUserByTokenFailedActionType
     | LogoutStartActionType
@@ -114,3 +130,6 @@ export type UserActions =
     | UserUpdateStartActionType
     | UserUpdateSuccessActionType
     | UserUpdateFailedActionType
+    | UpdateUserAvatarStartActionType
+    | UpdateUserAvatarSuccessActionType 
+    | UpdateUserAvatarFailedActionType;

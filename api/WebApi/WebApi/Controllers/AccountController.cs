@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Contracts.Business;
 using DTO;
+using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -29,6 +30,7 @@ public class AccountController : BaseController
     [ProducesResponseType(200, Type = typeof(UserViewModel))]
     public async Task<IActionResult> GetCurrentUser()
     {
+        var role = User.FindFirst(JwtClaimTypes.Role);
         return await GetUserById(Utilities.GetUserId(User));
     }
 
@@ -164,6 +166,20 @@ public class AccountController : BaseController
 
         AddError(result.Errors);
         return BadRequest(ModelState);
+    }
+
+    [HttpPut("upload-avatar/{id}")]
+    [Authorize]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(400)]
+    [Produces("application/json")]
+    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file, string id)
+    {
+        var result = await _accountService.UploadAvatarAsync(id, file);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return NoContent();
     }
 
     [HttpDelete("/roles/{id}")]

@@ -16,14 +16,18 @@ import {
     GetUserByTokenFailedActionType,
     UserUpdateStartActionType,
     UserUpdateSuccessActionType,
-    UserUpdateFailedActionType
+    UserUpdateFailedActionType,
+    UpdateUserAvatarStartActionType,
+    UpdateUserAvatarSuccessActionType,
+    UpdateUserAvatarFailedActionType
 } from "./user.action.types";
 import {
     UserLoginData,
     UserRegistrationData,
     UserActionTypes,
     LoginResponse,
-    UserData
+    UserData,
+    UpdateUserAvatar
 } from "./user.model"
 
 export const loginStartAction = (loginData: UserLoginData):
@@ -56,29 +60,39 @@ export const refreshFailedAction = (error: Error):
 export const logoutStartAction = ():
     LogoutStartActionType => ({ type: UserActionTypes.LOGOUT, payload: undefined });
 
-export const logoutSuccess = ():
+export const logoutSuccessAction = ():
     LogoutSuccessActionType => ({ type: UserActionTypes.LOGOUT_SUCCESS, payload: undefined });
 
-export const logoutFailed = (error: Error):
+export const logoutFailedAction = (error: Error):
     LogoutFailedActionType => ({ type: UserActionTypes.LOGOUT_FAILED, payload: error });
 
-export const getUserByTokenStart = ():
+export const getUserByTokenStartAction = ():
     GetUserByTokenStartActionType => ({ type: UserActionTypes.GET_USER_BY_TOKEN, payload: undefined });
 
-export const getUserByTokenSuccess = (response: UserData):
+export const getUserByTokenSuccessAction = (response: UserData):
     GetUserByTokenSuccessActionType => ({ type: UserActionTypes.GET_USER_BY_TOKEN_SUCCESS, payload: response });
 
-export const getUserByTokenFailed = (error: Error):
+export const getUserByTokenFailedAction = (error: Error):
     GetUserByTokenFailedActionType => ({ type: UserActionTypes.GET_USER_BY_TOKEN_FAILED, payload: error });
 
-export const updateUserStart = (payload: UserRegistrationData):
+export const updateUserStartAction = (payload: UserRegistrationData):
     UserUpdateStartActionType => ({ type: UserActionTypes.USER_UPDATE, payload: payload });
 
-export const updateUserSuccess = (responce: UserData): 
+export const updateUserSuccessAction = (responce: UserData):
     UserUpdateSuccessActionType => ({ type: UserActionTypes.USER_UPDATE_SUCCESS, payload: responce });
 
-export const updateUserFailed = (error: Error): 
+export const updateUserFailedAction = (error: Error):
     UserUpdateFailedActionType => ({ type: UserActionTypes.USER_UPDATE_FAILED, payload: error });
+
+export const updateUserAvatarStartAction = (payload: UpdateUserAvatar):
+    UpdateUserAvatarStartActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR, payload: payload });
+
+export const updateUserAvatarSuccessAction = (): 
+    UpdateUserAvatarSuccessActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR_SUCCESS, payload: undefined });
+
+export const updateUserAvatarFailedAction = (error: Error):
+    UpdateUserAvatarFailedActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR_FAILED, payload: error });
+
 
 export const userActions = {
     login: (loginData: UserLoginData) => loginStartAction(loginData),
@@ -91,12 +105,15 @@ export const userActions = {
     refreshSuccess: (response: UserData) => refreshSuccessAction(response),
     refreshFailed: (error: Error) => refreshFailedAction(error),
     logout: () => logoutStartAction(),
-    logoutSuccess: () => logoutSuccess(),
-    logoutFailed: (error: Error) => logoutFailed(error),
-    getUserByToken: () => getUserByTokenStart(),
-    getUserByTokenSuccess: (responce: UserData) => getUserByTokenSuccess(responce),
-    getUserByTokenFailed: (error: Error) => getUserByTokenFailed(error),
-    updateUser: (userUpdateData: UserRegistrationData) => updateUserStart(userUpdateData),
-    updateUserSuccess: (response: UserData) => updateUserSuccess(response),
-    updateUserFailed: (error: Error) => updateUserFailed(error)
+    logoutSuccess: () => logoutSuccessAction(),
+    logoutFailed: (error: Error) => logoutFailedAction(error),
+    getUserByToken: () => getUserByTokenStartAction(),
+    getUserByTokenSuccess: (responce: UserData) => getUserByTokenSuccessAction(responce),
+    getUserByTokenFailed: (error: Error) => getUserByTokenFailedAction(error),
+    updateUser: (userUpdateData: UserRegistrationData) => updateUserStartAction(userUpdateData),
+    updateUserSuccess: (response: UserData) => updateUserSuccessAction(response),
+    updateUserFailed: (error: Error) => updateUserFailedAction(error),
+    updateUserAvatar: (payload: UpdateUserAvatar) => updateUserAvatarStartAction(payload),
+    updateUserAvatarSuccess: () => updateUserAvatarSuccessAction(),
+    updateUserAvatarFailed: (error: Error) => updateUserAvatarFailedAction(error)
 }

@@ -1,18 +1,20 @@
 import { api } from "../../helpers/http/api.helper"
 import { AxiosResponse } from "axios";
-import { LoginResponse, UserData, UserLoginData, UserRegistrationData } from "./user.model";
+import { LoginResponse, UpdateUserAvatar, UserData, UserLoginData, UserRegistrationData } from "./user.model";
 
 const userUrl = 'users';
 const tokenUrl = 'connect/token';
-const client_id = 'react-spa'
+const client_id = 'react-spa';
+
 export default class UserService {
+
     static async login(loginPayload: UserLoginData): Promise<AxiosResponse<LoginResponse>> {
         return await api.post(tokenUrl, {
             grant_type: 'password',
             client_id: client_id,
             username: loginPayload.login,
             password: loginPayload.password
-        }, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+        }, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
     }
 
     static async registration(registrationPayload: UserRegistrationData): Promise<AxiosResponse<UserData>> {
@@ -36,6 +38,15 @@ export default class UserService {
     static async updateUser(user: UserRegistrationData): Promise<AxiosResponse<UserData>> {
         const url = `${userUrl}/me`;
         return await api.put(url, user);
+    }
+
+    static async updateUserAvatar(updateAvatarModel: UpdateUserAvatar) {
+        const url = `api/account/upload-avatar/${updateAvatarModel.userId}`;
+        const formData = new FormData();
+        formData.append('file', updateAvatarModel.file);
+        return await api.put(url, formData, {
+            headers: { 'Content-Type': 'mulipart/form-data' }
+        })
     }
 
     static logout(): void {

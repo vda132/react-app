@@ -15,5 +15,10 @@ api.interceptors.request.use((config: any) => {
 api.interceptors.response.use((config) => {
     return config.data;
 }, (async (error) => {
-   // TODO: add logic for refreshing token
+    debugger
+    if (error.response.status === 401) {
+        localStorage.clear();
+    }
+
+    throw error
 }));

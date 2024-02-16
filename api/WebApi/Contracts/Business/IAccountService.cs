@@ -1,4 +1,5 @@
 ﻿using DTO;
+using Microsoft.AspNetCore.Http;
 
 namespace Contracts.Business;
 
@@ -28,4 +29,5 @@ public interface IAccountService
         Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(DtoRole role, IEnumerable<string> claims);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(DtoUser user, IEnumerable<string> roles);
+        Task<(bool Succeeded, string[] Errors)> UploadAvatarAsync(string userId, IFormFile file);
 }

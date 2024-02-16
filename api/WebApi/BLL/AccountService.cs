@@ -5,10 +5,13 @@ using DB.Models;
 using DTO;
 using DTO.Constants;
 using DTO.Permissions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Models;
 using System.Security.Claims;
+using WebClient;
 
 namespace BLL;
 
@@ -20,18 +23,25 @@ public class AccountService : IAccountService
     private readonly ApplicationDbContext _context;
     private readonly UserManager<EntityUser> _userManager;
     private readonly RoleManager<EntityRole> _roleManager;
+    private readonly ContentManagerServiceResolver _contenetManagerResolver;
     private readonly IMapper _mapper;
+    private readonly UserConfig _userConfig;
+    private const string folderPath = "users/avatars";
 
     public AccountService(
     ApplicationDbContext context,
     UserManager<EntityUser> userManager,
     RoleManager<EntityRole> roleManager,
-    IMapper mapper)
+    IMapper mapper,
+    IOptions<AppSettings> config,
+    ContentManagerServiceResolver contenetManagerResolver)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
         _mapper = mapper;
+        _contenetManagerResolver = contenetManagerResolver;
+        _userConfig = config.Value.ContentConfig.UserConfig;
     }
 
     public async Task<bool> CheckPasswordAsync(DtoRole user, string password)
@@ -187,6 +197,8 @@ public class AccountService : IAccountService
         var roles = await _context.Roles.Where(el => userRoleIds.Contains(el.Id)).Select(el => el.Name).ToArrayAsync();
 
         var userResult = _mapper.Map<DtoUser>(user);
+        ApplyContentPath(userResult);
+
         return (userResult, roles);
     }
 
@@ -202,6 +214,7 @@ public class AccountService : IAccountService
     {
         var user = await _userManager.FindByIdAsync(userId);
         var result = _mapper.Map<DtoUser>(user);
+        ApplyContentPath(result);
 
         return result;
     }
@@ -360,6 +373,28 @@ public class AccountService : IAccountService
         return (true, new string[] { });
     }
 
+    public async Task<(bool Succeeded, string[] Errors)> UploadAvatarAsync(string userId, IFormFile file)
+    {
+        var service = _contenetManagerResolver(ContentManagerKey.AWS);
+        try
+        {
+            var result = await service.UploadFile(file, folderPath);
+            var user = await _userManager.FindByIdAsync(userId);
+            
+            if (user == null) 
+                return (false, new string[] { "User not found" });
+
+            user.AvatarUrl = result;
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            return (updateResult.Succeeded, updateResult.Errors.Select(el => el.Description).ToArray());
+        }
+        catch (Exception ex) 
+        {
+            return (false, new string[] { ex.Message });
+        }
+    }
+
     private async Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(EntityRole role)
     {
         var result = await _roleManager.DeleteAsync(role);
@@ -372,5 +407,10 @@ public class AccountService : IAccountService
         var result = await _userManager.DeleteAsync(user);
 
         return (result.Succeeded, result.Errors.Select(el => el.Description).ToArray());
+    }
+
+    private void ApplyContentPath(DtoUser dtoUser)
+    {
+        dtoUser.ContentPath = _userConfig.ImageServer;
     }
 }

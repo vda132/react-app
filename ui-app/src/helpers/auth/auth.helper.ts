@@ -13,7 +13,7 @@ export const proceedLoginResponce = (response: LoginResponse): UserData => {
     tokenExpiryDate.setSeconds(tokenExpiryDate.getSeconds() + expiresIn);
     const accessTokenExpiry = tokenExpiryDate;
     const decodedAccessToken = decodeToken(accessToken) as AccessToken;
-
+debugger
     const permissions = decodedAccessToken.permission ? [...decodedAccessToken.permission] : [];
     const user = {
         id: decodedAccessToken.sub,

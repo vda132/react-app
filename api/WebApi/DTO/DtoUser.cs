@@ -24,5 +24,7 @@ namespace DTO
         public string[] Roles { get; set; }
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
+        public string AvatarUrl { get; set; }
+        public string ContentPath { get; set; }
     }
 }

@@ -24,7 +24,7 @@ public class EntityUser : IdentityUser
     public string Configuration { get; set; }
 
     public bool IsEnabled { get; set; }
-
+    public string? AvatarUrl { get; set; }
     public bool IsLockedOut => LockoutEnabled && LockoutEnd >= DateTimeOffset.UtcNow;
 
     /// <summary>

@@ -1,3 +1,5 @@
+using Amazon;
+using Amazon.S3;
 using BLL;
 using Contracts.Business;
 using Contracts.Data;
@@ -14,6 +16,7 @@ using System.Reflection;
 using WebApi;
 using WebApi.Authorization;
 using WebApi.Helpers;
+using WebClient;
 
 var allowResources = "AllowResources";
 
@@ -21,13 +24,13 @@ var allowResources = "AllowResources";
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
 var authServerUrl = builder.Configuration["AuthServerUrl"].TrimEnd('/');
 
 var migrationsAssembly = typeof(ApplicationDbContext).GetTypeInfo().Assembly.GetName().Name; //DAL
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly(migrationsAssembly)));
+
 builder.Services.AddIdentity<EntityUser, EntityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -42,6 +45,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials());
 });
+
+builder.Services.Configure<AppSettings>(builder.Configuration);
 
 // Configure Identity options and password complexity here
 builder.Services.Configure<IdentityOptions>(options =>
@@ -125,6 +130,22 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
+var s3Config = builder.Configuration.Get<AppSettings>().S3Config;
+builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOptions
+{
+    Profile = s3Config.Profile,
+    Region = RegionEndpoint.GetBySystemName(s3Config.Region)
+});
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddScoped<S3ContentManagerService>();
+builder.Services.AddScoped<ContentManagerServiceResolver>(serviceProvider => key =>
+{
+    return key switch
+    {
+        ContentManagerKey.AWS => serviceProvider.GetService<S3ContentManagerService>(),
+        _ => serviceProvider.GetService<S3ContentManagerService>()
+    };
+});
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 

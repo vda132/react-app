@@ -11,3 +11,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ant-carousel .slick-prev,
+.ant-carousel .slick-prev:hover,
+.ant-carousel .slick-prev:focus {
+  font-size: 20px;
+  left: 10px;
+  z-index: 2;
+  color: black;
+}
+
+.ant-carousel .slick-next,
+.ant-carousel .slick-next:hover,
+.ant-carousel .slick-next:focus {
+  font-size: 20px;
+  right: 10px;
+  z-index: 2;
+  color: black;
+}
+
+.product .ant-image .ant-image-img {
+  padding: 5px;
+  height: 200px;
+}

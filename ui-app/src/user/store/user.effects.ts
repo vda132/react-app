@@ -1,6 +1,6 @@
-import { put, takeEvery } from 'redux-saga/effects'
+import { call, put, takeEvery } from 'redux-saga/effects'
 import { LoginResponse, UserActionTypes, UserData } from './user.model';
-import { GetUserByTokenStartActionType, LoginStartActionType, RegistrationStartActionType, UserUpdateStartActionType } from './user.action.types';
+import { GetUserByTokenStartActionType, LoginStartActionType, RegistrationStartActionType, UpdateUserAvatarStartActionType, UserUpdateStartActionType } from './user.action.types';
 import UserService from './user.service';
 import { userActions } from './user.actions';
 import { proceedLoginResponce } from '../../helpers/auth/auth.helper';
@@ -17,14 +17,15 @@ export const userEffects = [
     takeEvery(UserActionTypes.GET_USER_BY_TOKEN, getUserByToken),
     takeEvery(UserActionTypes.GET_USER_BY_TOKEN_FAILED, handleError),
     takeEvery(UserActionTypes.USER_UPDATE, updateUser),
-    takeEvery(UserActionTypes.USER_UPDATE_FAILED, handleError)
+    takeEvery(UserActionTypes.USER_UPDATE_FAILED, handleError),
+    takeEvery(UserActionTypes.USER_UPDATE_AVATAR, updateUserAvatar)
 ];
 
 function* login(action: LoginStartActionType) {
     try {
-        const loginResponse: LoginResponse = yield UserService.login({ ...action.payload });
-        debugger
-        const user = proceedLoginResponce(loginResponse);
+        const loginResponse: LoginResponse = yield call(UserService.login, { ...action.payload });
+        const user = proceedLoginResponce(loginResponse as LoginResponse);
+        yield put({ type: UserActionTypes.GET_USER_BY_TOKEN });
         yield put(userActions.loginSuccess(user));
     } catch (e) {
         const error = e as Error;
@@ -34,7 +35,7 @@ function* login(action: LoginStartActionType) {
 
 function* logout() {
     try {
-        yield UserService.logout();
+        yield call(UserService.logout);
         yield put(userActions.logoutSuccess());
     } catch (e) {
         const error = e as Error;
@@ -44,9 +45,10 @@ function* logout() {
 
 function* registration(action: RegistrationStartActionType) {
     try {
-        yield UserService.registration({ ...action.payload });
+        yield call(UserService.registration, { ...action.payload });
         const loginResponce: LoginResponse = yield UserService.login({ login: action.payload.userName, password: action.payload.newPassword! });
         const user = proceedLoginResponce(loginResponce);
+        yield put({ type: UserActionTypes.GET_USER_BY_TOKEN });
         yield put(userActions.registrationSuccess(user));
     } catch (e) {
         const error = e as Error;
@@ -56,12 +58,11 @@ function* registration(action: RegistrationStartActionType) {
 
 function* getUserByToken(action: GetUserByTokenStartActionType) {
     try {
-        const userResponce: UserData = yield UserService.getUser();
+        const userResponce: UserData = yield call(UserService.getUser);
         localStorage.setItem('current_user', JSON.stringify(userResponce));
         yield put(userActions.getUserByTokenSuccess(userResponce));
-    } catch(e) {
+    } catch (e) {
         const error = e as Error;
-        localStorage.clear();
         yield put(userActions.getUserByTokenFailed(error));
     }
 }
@@ -85,6 +86,17 @@ function* updateUser(action: UserUpdateStartActionType) {
     } catch (e) {
         const error = e as Error;
         yield put(userActions.updateUserFailed(error))
+    }
+}
+
+function* updateUserAvatar(action: UpdateUserAvatarStartActionType) {
+    try {
+        yield call(UserService.updateUserAvatar, action.payload);
+        yield put({ type: UserActionTypes.GET_USER_BY_TOKEN });
+        yield put(userActions.updateUserAvatarSuccess());
+    } catch (e) {
+        const error = e as Error;
+        yield put(userActions.updateUserAvatarFailed(error));
     }
 }
 

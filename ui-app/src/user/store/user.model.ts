@@ -18,6 +18,8 @@ export interface UserData {
     isEnabled: boolean;
     isLockedOut: boolean;
     roles: string[];
+    contentPath?: string;
+    avatarUrl?: string;
 }
 
 export interface UserLoginData {
@@ -37,6 +39,10 @@ export interface LoginResponse {
     token_type: string;
 }
 
+export interface UpdateUserAvatar {
+    userId: string,
+    file: File
+}
 
 export interface AccessToken {
     nbf: number;
@@ -77,5 +83,8 @@ export enum UserActionTypes {
     GET_USER_BY_TOKEN_FAILED = "GET_USER_BY_TOKEN_FAILED",
     USER_UPDATE = "USER_UPDATE",
     USER_UPDATE_SUCCESS = "USER_UPDATE_SUCCESS",
-    USER_UPDATE_FAILED = "USER_UPDATE_FAILED"
+    USER_UPDATE_FAILED = "USER_UPDATE_FAILED",
+    USER_UPDATE_AVATAR = "USER_UPDATE_AVATAR",
+    USER_UPDATE_AVATAR_SUCCESS = "USER_UPDATE_AVATAR_SUCCESS",
+    USER_UPDATE_AVATAR_FAILED = "USER_UPDATE_AVATAR_FAILED"
 };

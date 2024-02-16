@@ -100,6 +100,21 @@ export const userReducer = (state = userState, action: UserActions) => {
                 isAuthorizationLoading: false
             }
         }
+        case UserActionTypes.USER_UPDATE_AVATAR: {
+            return {
+                ...state
+            }
+        }
+        case UserActionTypes.USER_UPDATE_AVATAR_SUCCESS: {
+            return {
+                ...state
+            }
+        }
+        case UserActionTypes.USER_UPDATE_AVATAR_FAILED: {
+            return {
+                ...state
+            }
+        }
         default: {
            return {...state}
         } 
