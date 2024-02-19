@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace API.Controllers;
 
+[Route("api/[controller]")]
 [Authorize]
 public class NotificationsController : ControllerBase
 {

@@ -9,9 +9,9 @@ import { useAdmin } from "./hooks/useAdmin";
 
 export default function AppRouter() {
     const isAdmin = useAdmin();
-    
+
     return (
-        <BrowserRouter >
+        <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Main />}>
                     <Route index element={<Home />} />

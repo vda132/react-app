@@ -19,7 +19,10 @@ import {
     UserUpdateFailedActionType,
     UpdateUserAvatarStartActionType,
     UpdateUserAvatarSuccessActionType,
-    UpdateUserAvatarFailedActionType
+    UpdateUserAvatarFailedActionType,
+    RegisterUserDeviceTokenStartActionType,
+    RegisterUserDeviceTokenSuccessActionType,
+    RegisterUserDeviceTokenFailedActionType
 } from "./user.action.types";
 import {
     UserLoginData,
@@ -87,11 +90,20 @@ export const updateUserFailedAction = (error: Error):
 export const updateUserAvatarStartAction = (payload: UpdateUserAvatar):
     UpdateUserAvatarStartActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR, payload: payload });
 
-export const updateUserAvatarSuccessAction = (): 
+export const updateUserAvatarSuccessAction = ():
     UpdateUserAvatarSuccessActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR_SUCCESS, payload: undefined });
 
 export const updateUserAvatarFailedAction = (error: Error):
     UpdateUserAvatarFailedActionType => ({ type: UserActionTypes.USER_UPDATE_AVATAR_FAILED, payload: error });
+
+export const registerUserDeviceTokenStartAction = (payload: string):
+    RegisterUserDeviceTokenStartActionType => ({ type: UserActionTypes.REGISTER_USER_DEVICE_TOKEN, payload: payload });
+
+export const registerUserDeviceTokenSuccessAction = ():
+    RegisterUserDeviceTokenSuccessActionType => ({ type: UserActionTypes.REGISTER_USER_DEVICE_TOKEN_SUCCESS, payload: undefined });
+
+export const registerUserDeviceTokenFailedAction = (error: Error):
+    RegisterUserDeviceTokenFailedActionType => ({ type: UserActionTypes.REGISTER_USER_DEVICE_TOKEN_FAILED, payload: error });
 
 
 export const userActions = {
@@ -115,5 +127,8 @@ export const userActions = {
     updateUserFailed: (error: Error) => updateUserFailedAction(error),
     updateUserAvatar: (payload: UpdateUserAvatar) => updateUserAvatarStartAction(payload),
     updateUserAvatarSuccess: () => updateUserAvatarSuccessAction(),
-    updateUserAvatarFailed: (error: Error) => updateUserAvatarFailedAction(error)
+    updateUserAvatarFailed: (error: Error) => updateUserAvatarFailedAction(error),
+    registerUserDeviceToken: (payload: string) => registerUserDeviceTokenStartAction(payload),
+    registerUserDeviceTokenSuccess: () => registerUserDeviceTokenSuccessAction(),
+    RegisterUserDeviceTokenFailedAction: (error: Error) => registerUserDeviceTokenFailedAction(error)
 }

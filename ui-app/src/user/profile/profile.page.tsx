@@ -27,12 +27,15 @@ const beforeUpload = (file: FileType) => {
 export const Profile = () => {
     const dispatch = useDispatch<Dispatch<UserActions>>();
     const user = useSelector(userSelectors.user);
+    
     const [userForm] = useForm();
     const [passwordsForm] = useForm();
-    const userValues = Form.useWatch([], userForm);
-    const passwordValues = Form.useWatch([], passwordsForm);
     const [imageUrl, setImageUrl] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
+
+    const userValues = Form.useWatch([], userForm);
+    const passwordValues = Form.useWatch([], passwordsForm);
+
 
     const updateProfile = () => {
         dispatch(userActions.updateUser({ ...userValues, id: user?.id }));
@@ -69,7 +72,6 @@ export const Profile = () => {
         }
 
         return () => {
-            debugger
             URL.revokeObjectURL(imageUrl);
         }
     }, [user])

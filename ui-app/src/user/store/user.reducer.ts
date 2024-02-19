@@ -2,7 +2,7 @@ import { UserActions } from "./user.action.types";
 import { UserActionTypes, userState } from "./user.model";
 
 export const userReducer = (state = userState, action: UserActions) => {
-    switch(action.type) {
+    switch (action.type) {
         case UserActionTypes.LOGIN: {
             return {
                 ...state,
@@ -115,9 +115,25 @@ export const userReducer = (state = userState, action: UserActions) => {
                 ...state
             }
         }
+        case UserActionTypes.REGISTER_USER_DEVICE_TOKEN: {
+            return {
+                ...state
+            }
+        }
+        case UserActionTypes.REGISTER_USER_DEVICE_TOKEN_SUCCESS: {
+            return {
+                ...state
+            }
+        }
+        case UserActionTypes.REGISTER_USER_DEVICE_TOKEN_FAILED: {
+            return {
+                ...state
+            }
+        }
+
         default: {
-           return {...state}
-        } 
-            
+            return { ...state }
+        }
+
     }
 }

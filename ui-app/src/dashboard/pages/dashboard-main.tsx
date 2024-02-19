@@ -57,7 +57,6 @@ export const DashboardMain = () => {
         };
         window.addEventListener('resize', listener)
         return () => {
-            debugger
             window.removeEventListener('resize', listener);
         }
     }, [myChart])

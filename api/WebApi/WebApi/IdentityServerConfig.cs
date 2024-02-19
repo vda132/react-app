@@ -8,6 +8,7 @@ namespace WebApi;
 public class IdentityServerConfig
 {
     public const string ApiName = "asp-net-api";
+    public const string NotificationApiName = "notification-api";
     public const string ApiFriendlyName = "ASP .NET API";
     public const string UIClientId = "react-spa";
     public const string SwaggerClientID = "swaggerui";
@@ -81,7 +82,6 @@ public class IdentityServerConfig
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,
                 },
-
                 new Client
                 {
                     ClientId = SwaggerClientID,
@@ -90,6 +90,16 @@ public class IdentityServerConfig
                     AllowAccessTokensViaBrowser = true,
                     RequireClientSecret = false,
 
+                    AllowedScopes = {
+                        ApiName
+                    }
+                },
+                new Client
+                {
+                    ClientId = NotificationApiName,
+                    ClientName = "Notification Api",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                    RequireClientSecret = false,
                     AllowedScopes = {
                         ApiName
                     }

@@ -17,7 +17,6 @@ export const RegistrationModal = ({ visible, onCancel }: { visible: boolean, onC
     const processRegistration = (registrationRequest: UserRegistrationData) => dispatch(userActions.registration(registrationRequest));
 
     const onFormSubmit = () => {
-        debugger
         processRegistration({ ...values, roles: ['user'] });
     }
 

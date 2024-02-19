@@ -111,6 +111,21 @@ export interface UpdateUserAvatarFailedActionType {
     payload: Error;
 }
 
+export interface RegisterUserDeviceTokenStartActionType {
+    type: typeof UserActionTypes.REGISTER_USER_DEVICE_TOKEN;
+    payload: string;
+}
+
+export interface RegisterUserDeviceTokenSuccessActionType {
+    type: typeof UserActionTypes.REGISTER_USER_DEVICE_TOKEN_SUCCESS;
+    payload: undefined;
+}
+
+export interface RegisterUserDeviceTokenFailedActionType {
+    type: typeof UserActionTypes.REGISTER_USER_DEVICE_TOKEN_FAILED;
+    payload: Error;
+}
+
 export type UserActions =
     | LoginStartActionType
     | LoginSuccessActionType
@@ -132,4 +147,7 @@ export type UserActions =
     | UserUpdateFailedActionType
     | UpdateUserAvatarStartActionType
     | UpdateUserAvatarSuccessActionType 
-    | UpdateUserAvatarFailedActionType;
+    | UpdateUserAvatarFailedActionType
+    | RegisterUserDeviceTokenStartActionType
+    | RegisterUserDeviceTokenSuccessActionType
+    | RegisterUserDeviceTokenFailedActionType;
