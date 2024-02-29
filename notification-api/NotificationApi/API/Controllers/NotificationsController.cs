@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace API.Controllers;
 
 [Route("api/[controller]")]
+[ApiController]
 [Authorize]
 public class NotificationsController : ControllerBase
 {
@@ -25,6 +26,28 @@ public class NotificationsController : ControllerBase
 
         await _notificationService.RegisterUserTokenAsync(userId!, registrationToken);
         return Ok();
+    }
+
+    [HttpGet("by-user")]
+    [Authorize]
+    public async Task<IActionResult> GetUserNotifications()
+    {
+        var userId = User.FindFirstValue("sub")?.Trim();
+
+        var notifications = await _notificationService.GetNotificationsByUser(userId!);
+        var result = new List<NotificationViewModel>();
+        
+        foreach (var notification in notifications) 
+            result.Add(new NotificationViewModel
+            {
+                Id = notification.Id,
+                Description = notification.Description,
+                IsRead = notification.IsRead,
+                NotificationInfo = notification.NotificationInfo,
+                Title = notification.Title
+            });
+
+        return Ok(result);
     }
 
     [HttpDelete("/delete-user-device/{token}")]

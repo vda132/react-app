@@ -30,7 +30,7 @@ public class AccountController : BaseController
     [ProducesResponseType(200, Type = typeof(UserViewModel))]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var role = User.FindFirst(JwtClaimTypes.Role);
+        var userId = User.Claims.Select(el => new { Name = el.Type, Value = el.Value }).ToArray();
         return await GetUserById(Utilities.GetUserId(User));
     }
 

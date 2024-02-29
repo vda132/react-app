@@ -13,8 +13,6 @@ public class NotificationService : INotificationService
 {
     private readonly NotificationDbContext _dbContext;
     private static readonly FirebaseMessaging messaging = FirebaseMessaging.DefaultInstance; 
-    private const string adminTopic = "admin";
-
 
     public NotificationService(NotificationDbContext dbContext)
     {
@@ -59,9 +57,26 @@ public class NotificationService : INotificationService
             .UserRegistrationTokens
             .Where(el => el.UserId == userId
                 && el.RegistrationToken != userDeviceToken)
-            .Select(el => el.RegistrationToken)
             .AsSingleQuery()
             .ToListAsync();
+
+        var notificationToRead = await _dbContext
+               .NotificationUsers
+               .FirstOrDefaultAsync(el => el.NotificationId == notificationId && el.UserId == userId);
+
+        if (notificationToRead == null)
+            return;
+
+        notificationToRead.IsRead = true;
+        await _dbContext.SaveChangesAsync();
+
+        if (!userRegistrationTokens.Any())
+            return;
+
+        var notification = await _dbContext.Notifications.FirstOrDefaultAsync(el => el.Id == notificationId);
+
+        var result = await SendNotification(userRegistrationTokens, notification!, true);
+        await PostProcessMessageSendingAsync(result, userRegistrationTokens);
     }
 
     public async Task RegisterUserTokenAsync(string userId, string userDeviceToken)
@@ -99,7 +114,9 @@ public class NotificationService : INotificationService
                 .UserRegistrationTokens
                 .Where(el => el.UserId != senderId)
                 .ToListAsync(cancellationToken);
-        
+
+        if (!userRegistrationTokens.Any())
+            return;
 
         var notificationToAdd = new DB.Models.Notification
         {
@@ -112,18 +129,47 @@ public class NotificationService : INotificationService
         await _dbContext.AddAsync(notificationToAdd);
         var notificationUsers = new List<NotificationUser>();
 
-        foreach (var userRegistrationToken in userRegistrationTokens)
+        foreach (var userId in userRegistrationTokens.Select(el => el.UserId).Distinct().ToList())
             notificationUsers.Add(new NotificationUser
             {
-                UserId = userRegistrationToken.UserId,
+                UserId = userId,
                 NotificationId = notificationId,
                 IsRead = false
             });
 
         await _dbContext.NotificationUsers.AddRangeAsync(notificationUsers);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var result = await SendNotification(userRegistrationTokens, notificationToAdd);
         await PostProcessMessageSendingAsync(result, userRegistrationTokens);
+    }
+
+    public async Task<IEnumerable<NotificationDto>> GetNotificationsByUser(string userId)
+    {
+        var unreadNotificationIds = await _dbContext
+            .NotificationUsers
+            .Where(el => el.UserId == userId && !el.IsRead)
+            .Select(el => el.NotificationId)
+            .ToListAsync();
+
+        var notifications = await _dbContext
+            .Notifications
+            .Where(el => unreadNotificationIds.Contains(el.Id))
+            .ToListAsync();
+
+        var result = new List<NotificationDto>();
+
+        foreach (var notification in notifications)
+            result.Add(new NotificationDto
+            {
+                Id = notification.Id,
+                Description = notification.Description,
+                IsRead = false,
+                NotificationInfo = notification.NotificationInfo,
+                Title = notification.Title,
+            });
+
+        return result;
     }
 
     public Task SendNotificationToUserAsync(NotificationDto notificationDto, string senderId, string receiverId)
@@ -170,7 +216,8 @@ public class NotificationService : INotificationService
             Data = new Dictionary<string, string>()
             {
                 { "isRead", isRead.ToString() },
-                { "notificationInfo", notification.NotificationInfo! }
+                { "notificationInfo", notification.NotificationInfo! },
+                { "notificationId", notification.Id.ToString() }
             }
         };
     }

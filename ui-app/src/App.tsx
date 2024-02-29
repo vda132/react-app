@@ -1,7 +1,7 @@
 import { ConfigProvider } from 'antd';
 import './App.css';
 import AppRouter from './app-router.component';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import { UserActions } from './user/store/user.action.types';
 import { useEffect } from 'react';

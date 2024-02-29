@@ -214,6 +214,5 @@ export const DashboardMain = () => {
                 </Col>
             </Row>
         </div>
-
     )
 }

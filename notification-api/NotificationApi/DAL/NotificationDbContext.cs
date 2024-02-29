@@ -16,5 +16,7 @@ public class NotificationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<NotificationUser>().HasKey(el => new { el.UserId, el.NotificationId });
+        modelBuilder.Entity<UserRegistrationToken>().HasKey(el => new { el.UserId, el.RegistrationToken });
     }
 }

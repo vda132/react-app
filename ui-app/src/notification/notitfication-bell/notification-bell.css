@@ -1,0 +1,4 @@
+.notification-dropdown .ant-dropdown-menu {
+    height: 250px;
+    overflow-y: scroll;
+}

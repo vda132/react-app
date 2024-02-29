@@ -1,11 +1,13 @@
 import { ContactsOutlined, MenuFoldOutlined, MenuUnfoldOutlined, PieChartOutlined, ProductOutlined, ShopOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu, theme } from "antd";
 import { useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
 
 export const DashBoard = () => {
+    const location = useLocation();
+    const currentLocation = location.pathname.split('/');
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: { colorBgContainer },
@@ -35,7 +37,7 @@ export const DashBoard = () => {
                 <Menu
                     mode="inline"
                     theme="dark"
-                    defaultSelectedKeys={['Child 1']}
+                    defaultSelectedKeys={[currentLocation[currentLocation.length - 1]]}
                     items={[
                         {
                             key: '1',
@@ -43,8 +45,10 @@ export const DashBoard = () => {
                             type: 'group',
                             children: [
                                 {
-                                    key: 'Child 1',
-                                    label: 'Dashboard',
+                                    key: 'dashboard',
+                                    label: (
+                                        <Link to='/dashboard'>Dashboard</Link>
+                                    ),
                                     icon: <PieChartOutlined />
                                 }
                             ]
@@ -55,13 +59,17 @@ export const DashBoard = () => {
                             type: 'group',
                             children: [
                                 {
-                                    key: 'Store Management 1',
-                                    label: 'Markets',
+                                    key: 'markets',
+                                    label: (
+                                        <Link to='/dashboard/markets'>Markets</Link>
+                                    ),
                                     icon: <ShopOutlined />
                                 },
                                 {
-                                    key: 'Store Management 2',
-                                    label: 'Products',
+                                    key: 'products',
+                                    label: (
+                                        <Link to='/dashboard/products'>Products</Link>
+                                    ),
                                     icon: <ProductOutlined />
                                 }
                             ]

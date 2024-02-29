@@ -13,6 +13,7 @@ import { userActions } from "../user/store/user.actions";
 import Search from "antd/es/input/Search";
 import { CategoriesDropdown } from "../features/categories/dropdown/categories-dropdown";
 import { useAdmin } from "../hooks/useAdmin";
+import { NotificationBell } from "../notification/notitfication-bell/notification-bell";
 
 const { Header, Sider, Content } = Layout;
 
@@ -46,10 +47,6 @@ export function Main() {
 
     const onLogoutClick = () => {
         dispatch(userActions.logout());
-    }
-
-    const navigateTo = (event: any) => {
-        navigate(`/${event.key}`);
     }
 
     const renderHeaderContent = () => {
@@ -105,6 +102,7 @@ export function Main() {
                         />
                     </Flex>
                     <Flex gap="small" align='center'>
+                        <NotificationBell />
                         <Dropdown menu={{ items }} trigger={['click']}>
                             <Avatar
                                 size='default'

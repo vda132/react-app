@@ -7,6 +7,8 @@ using Microsoft.OpenApi.Models;
 using Services;
 using System.Reflection;
 
+var allowResources = "AllowResources";
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
@@ -17,6 +19,16 @@ var migrationsAssembly = typeof(NotificationDbContext).GetTypeInfo().Assembly.Ge
 builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly(migrationsAssembly)));
 builder.Services.Configure<AppSettings>(builder.Configuration);
+builder.Services.AddCors(options =>
+{
+    // ToDo: change headers
+    options.AddPolicy(name: allowResources,
+        builder => builder
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
 
 var serverConfig = builder.Configuration.Get<AppSettings>()!.IdentityServerConfig;
 
@@ -27,12 +39,17 @@ builder.Services.AddAuthentication("Bearer")
             {
                 options.Authority = serverConfig?.ServerUrl;
                 options.Audience = serverConfig?.ApiName;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.ValidateLifetime = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
+                options.MapInboundClaims = false;
                 options.RequireHttpsMetadata = false;
             });
 
 FirebaseApp.Create(new AppOptions
 {
-    Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "notification-application-6803b-firebase-adminsdk-ixmvl-b4a98b8fc4.json"))
+    Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "notification-application-6803b-firebase-adminsdk-rnnhy-cae63987fa.json"))
 });
 
 builder.Services.AddSwaggerGen(opt =>
@@ -65,6 +82,8 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 var app = builder.Build();
+
+app.UseCors(allowResources);
 
 app.UseHttpsRedirection();
 

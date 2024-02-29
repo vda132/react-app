@@ -101,6 +101,7 @@ public class IdentityServerConfig
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
                     RequireClientSecret = false,
                     AllowedScopes = {
+                        IdentityServerConstants.StandardScopes.OpenId,
                         ApiName
                     }
                 }

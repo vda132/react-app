@@ -10,14 +10,16 @@ public class NotificationViewModel
     public bool IsRead { get; set; } = false;
     public string? NotificationInfo { get; set; }
 
-    public NotificationViewModel(NotificationDto dto)
-    {
-        Id = dto.Id;
-        Title = dto.Title;
-        Description = dto.Description;
-        IsRead = dto.IsRead;
-        NotificationInfo = dto.NotificationInfo;
-    }
+    //public NotificationViewModel() { }  
+
+    //public NotificationViewModel(NotificationDto dto)
+    //{
+    //    Id = dto.Id;
+    //    Title = dto.Title;
+    //    Description = dto.Description;
+    //    IsRead = dto.IsRead;
+    //    NotificationInfo = dto.NotificationInfo;
+    //}
 
     public NotificationDto ToDto() => 
         new NotificationDto { Id = Id, Title = Title, Description = Description, IsRead = IsRead, NotificationInfo = NotificationInfo };

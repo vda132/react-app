@@ -28,7 +28,6 @@ import {
     UserLoginData,
     UserRegistrationData,
     UserActionTypes,
-    LoginResponse,
     UserData,
     UpdateUserAvatar
 } from "./user.model"
@@ -130,5 +129,5 @@ export const userActions = {
     updateUserAvatarFailed: (error: Error) => updateUserAvatarFailedAction(error),
     registerUserDeviceToken: (payload: string) => registerUserDeviceTokenStartAction(payload),
     registerUserDeviceTokenSuccess: () => registerUserDeviceTokenSuccessAction(),
-    RegisterUserDeviceTokenFailedAction: (error: Error) => registerUserDeviceTokenFailedAction(error)
+    registerUserDeviceTokenFailed: (error: Error) => registerUserDeviceTokenFailedAction(error)
 }

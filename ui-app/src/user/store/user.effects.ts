@@ -1,6 +1,6 @@
-import { call, put, takeEvery } from 'redux-saga/effects'
+import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 import { LoginResponse, UserActionTypes, UserData } from './user.model';
-import { GetUserByTokenStartActionType, LoginStartActionType, RegistrationStartActionType, UpdateUserAvatarStartActionType, UserUpdateStartActionType } from './user.action.types';
+import { GetUserByTokenStartActionType, LoginStartActionType, RegisterUserDeviceTokenStartActionType, RegistrationStartActionType, UpdateUserAvatarStartActionType, UserUpdateStartActionType } from './user.action.types';
 import UserService from './user.service';
 import { userActions } from './user.actions';
 import { proceedLoginResponce } from '../../helpers/auth/auth.helper';
@@ -18,18 +18,31 @@ export const userEffects = [
     takeEvery(UserActionTypes.GET_USER_BY_TOKEN_FAILED, handleError),
     takeEvery(UserActionTypes.USER_UPDATE, updateUser),
     takeEvery(UserActionTypes.USER_UPDATE_FAILED, handleError),
-    takeEvery(UserActionTypes.USER_UPDATE_AVATAR, updateUserAvatar)
+    takeEvery(UserActionTypes.USER_UPDATE_AVATAR, updateUserAvatar),
+    takeLatest(UserActionTypes.REGISTER_USER_DEVICE_TOKEN, registerUserDeviceToken),
+    takeEvery(UserActionTypes.REGISTER_USER_DEVICE_TOKEN_FAILED, handleError)
 ];
 
 function* login(action: LoginStartActionType) {
     try {
         const loginResponse: LoginResponse = yield call(UserService.login, { ...action.payload });
-        const user = proceedLoginResponce(loginResponse as LoginResponse);
+        const user = proceedLoginResponce(loginResponse);
         yield put({ type: UserActionTypes.GET_USER_BY_TOKEN });
         yield put(userActions.loginSuccess(user));
     } catch (e) {
         const error = e as Error;
         yield put(userActions.loginFailed(error));
+    }
+}
+
+function* registerUserDeviceToken(action: RegisterUserDeviceTokenStartActionType) {
+    try {
+        yield call(UserService.registerUserDeviceToken, action.payload);
+        localStorage.setItem('user_device_token', action.payload);
+        yield put(userActions.registerUserDeviceTokenSuccess);
+    } catch (e) {
+        const error = e as Error;
+        yield put(userActions.registerUserDeviceTokenFailed(error));
     }
 }
 

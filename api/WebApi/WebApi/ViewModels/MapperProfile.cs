@@ -5,6 +5,7 @@ using DTO.Permissions;
 using Microsoft.AspNetCore.Identity;
 using Models;
 using WebApi.ViewModels.Account;
+using WebApi.ViewModels.Market;
 
 namespace WebApi.ViewModels;
 
@@ -33,6 +34,12 @@ public class MapperProfile : Profile
             .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));
         CreateMap<IdentityRoleClaim<string>, ApplicationPermission>()
             .ConvertUsing(s => ApplicationPermissions.GetPermissionByValue(s.ClaimValue));
+
+        // Markets
+        CreateMap<DtoMarket, EntityMarket>()
+            .ForMember(d => d.Id, map => map.MapFrom(src => src.Id != null ? src.Id : Guid.NewGuid().ToString()));
+
+        CreateMap<EntityMarket, DtoMarket>();
     }
 
     public void MapDtosToViewModels()
@@ -49,5 +56,11 @@ public class MapperProfile : Profile
             .ReverseMap();
         CreateMap<ApplicationPermission, PermissionViewModel>()
             .ReverseMap();
+
+        // Markets
+        CreateMap<DtoMarket, MarketViewModel>()
+            .ReverseMap();
+
+        CreateMap(typeof(PageableResultViewModel<>), typeof(DtoPageableResult<>)).ReverseMap();
     }
 }

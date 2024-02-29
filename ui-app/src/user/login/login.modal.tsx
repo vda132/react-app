@@ -5,9 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { userActions } from '../store/user.actions';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Dispatch } from 'redux';
-import "./login.modal.css"
 import { userSelectors } from '../store/user.selectors';
 import { useEffect } from 'react';
+import "./login.modal.css";
 
 export const LoginModal = ({ visible, onCancel }: { visible: boolean, onCancel: any }) => {
     const dispatch = useDispatch<Dispatch<UserActions>>();
